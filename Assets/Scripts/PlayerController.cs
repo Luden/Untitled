@@ -8,7 +8,9 @@ public class PlayerController : MonoBehaviour
 	[SerializeField]
 	Rigidbody2D _body;
 	[SerializeField]
-	Collider2D _collider;
+	Transform _leftLeg;
+	[SerializeField]
+	Transform _rightLeg;
 
 	// settings
 	private float _distToGround;
@@ -18,7 +20,9 @@ public class PlayerController : MonoBehaviour
 	public float _groundAcceleration = 5f;
 	public float _airMaxVelocity = 5f;
 	public float _airAcceleration = 2f;
-	public float _jumpSpeed = 5f;
+
+	public float _jumpSpeedMax = 5f;
+	public float _jumpGravity = 5f;
 	public float _jumpTimeMax = 1f;
 
 	// inputs
@@ -112,11 +116,11 @@ public class PlayerController : MonoBehaviour
 		var shouldAccelerate = _jumpTime < _jumpTimeMax && !_isJumpDone;
 		if (shouldAccelerate)
 		{
-			_body.velocity = new Vector2(_body.velocity.x, _jumpSpeed);
+			_body.velocity = new Vector2(_body.velocity.x, _jumpSpeedMax);
 		}
 		else if (_body.velocity.y > 0)
 		{
-			_body.velocity = new Vector2(_body.velocity.x, 0);
+			//_body.velocity = new Vector2(_body.velocity.x, 0);
 		}
 
 		_jumpTime += Time.fixedDeltaTime;
@@ -124,8 +128,9 @@ public class PlayerController : MonoBehaviour
 
 	private void UpdateGrounded()
 	{
-		var hit = Physics2D.Raycast(transform.position, -Vector2.up, 0.1f, 1 << LayerMaskEx.Obstacle);
-		_isGrounded = hit.collider != null;
+		var hitLeft = Physics2D.Raycast(_leftLeg.position, -Vector2.up, 0.1f, 1 << LayerMaskEx.Obstacle);
+		var hitRight = Physics2D.Raycast(_rightLeg.position, -Vector2.up, 0.1f, 1 << LayerMaskEx.Obstacle);
+		_isGrounded = hitLeft.collider != null || hitRight.collider != null;
 
 		if (_isGrounded && !_jumpInput && _isJumpStarted)
 		{
