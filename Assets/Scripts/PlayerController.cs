@@ -60,6 +60,7 @@ public class PlayerController : MonoBehaviour
 	{
 		UpdateGrounded();
 		UpdateJumping();
+		ClampMaxSpeedY();
 		UpdateMoving();
 	}
 
@@ -124,6 +125,12 @@ public class PlayerController : MonoBehaviour
 		}
 
 		_jumpTime += Time.fixedDeltaTime;
+	}
+
+	private void ClampMaxSpeedY()
+	{
+		if (_body.velocity.y < -_jumpSpeedMax)
+			_body.velocity = new Vector2(_body.velocity.x, -_jumpSpeedMax);
 	}
 
 	private void UpdateGrounded()
