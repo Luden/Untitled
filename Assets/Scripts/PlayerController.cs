@@ -6,8 +6,6 @@ using Helpers;
 public class PlayerController : MonoBehaviour
 {
 	[SerializeField]
-	Rigidbody2D _body;
-	[SerializeField]
 	Transform _leftLeg;
 	[SerializeField]
 	Transform _rightLeg;
@@ -35,6 +33,7 @@ public class PlayerController : MonoBehaviour
 	private bool _isJumpStarted;
 	private float _jumpTime;
 	private bool _isGrounded;
+	private Vector2 _velocity;
 
 	void Start()
 	{
@@ -53,7 +52,7 @@ public class PlayerController : MonoBehaviour
 
 	public void SetJumpInput(bool jumpInput)
 	{
-		_jumpInput = jumpInput;		
+		_jumpInput = jumpInput;
 	}
 
 	private void FixedUpdate()
@@ -61,11 +60,26 @@ public class PlayerController : MonoBehaviour
 		UpdateGrounded();
 		UpdateJumping();
 		UpdateMoving();
+		UpdatePosition();
+	}
+
+	private void UpdatePosition()
+	{
+		var oldPos = transform.position;
+		var vel = _velocity;
+		var dt = Time.fixedDeltaTime;
+
+		var deltaX = vel.x * dt;
+		var deltaY = vel.y * dt;
+
+		if (deltaY < 0)
+			deltaY = -HitGround(-deltaY);
+		transform.position = new Vector2(oldPos.x + deltaX, oldPos.y + deltaY);
 	}
 
 	private void UpdateMoving()
 	{
-		var velocity = _body.velocity.x;
+		var velocity = _velocity.x;
 		var inputAcceleration = _horInput * (_isGrounded ? _groundAcceleration : _airAcceleration);
 
 		bool isStoping = _horInput == 0;
@@ -95,7 +109,7 @@ public class PlayerController : MonoBehaviour
 		if ((Mathf.Sign(velocity) != Mathf.Sign(newVelocity) || velocity == 0) && isStoping)
 			newVelocity = 0;
 
-		_body.velocity = new Vector2(newVelocity, _body.velocity.y);
+		_velocity = new Vector2(newVelocity, _velocity.y);
 	}
 
 	private void UpdateJumping()
@@ -107,8 +121,15 @@ public class PlayerController : MonoBehaviour
 				_isJumpDone = true;
 		}
 
+		var dt = Time.fixedDeltaTime;
 		if (!_isJumpStarted)
+		{
+			var speed = Mathf.Max(_velocity.y - _jumpGravity * dt * dt, -_jumpSpeedMax);
+			if (_isGrounded)
+				speed = 0;
+			_velocity = new Vector2(_velocity.x, speed);
 			return;
+		}
 
 		if (!_jumpInput && !_isJumpDone)
 			_isJumpDone = true;
@@ -116,21 +137,37 @@ public class PlayerController : MonoBehaviour
 		var shouldAccelerate = _jumpTime < _jumpTimeMax && !_isJumpDone;
 		if (shouldAccelerate)
 		{
-			_body.velocity = new Vector2(_body.velocity.x, _jumpSpeedMax);
+			_velocity = new Vector2(_velocity.x, _jumpSpeedMax);
 		}
-		else if (_body.velocity.y > 0)
+		else
 		{
-			//_body.velocity = new Vector2(_body.velocity.x, 0);
+			var speed = Mathf.Max(_velocity.y - _jumpGravity * dt * dt, -_jumpSpeedMax);
+			if (_isGrounded)
+				speed = 0;
+			_velocity = new Vector2(_velocity.x, speed);
 		}
 
 		_jumpTime += Time.fixedDeltaTime;
 	}
 
+	private float HitGround(float offset)
+	{
+		var hitLeft = Physics2D.Raycast(_leftLeg.position, -Vector2.up, offset, 1 << LayerMaskEx.Obstacle);
+		var hitRight = Physics2D.Raycast(_rightLeg.position, -Vector2.up, offset, 1 << LayerMaskEx.Obstacle);
+
+		var newOffset = offset;
+		if (hitLeft.collider != null)
+			newOffset = Mathf.Min(newOffset, _leftLeg.position.y - hitLeft.point.y);
+		if (hitRight.collider != null)
+			newOffset = Mathf.Min(newOffset, _rightLeg.position.y - hitRight.point.y);
+
+		return newOffset;
+	}
+
 	private void UpdateGrounded()
 	{
-		var hitLeft = Physics2D.Raycast(_leftLeg.position, -Vector2.up, 0.1f, 1 << LayerMaskEx.Obstacle);
-		var hitRight = Physics2D.Raycast(_rightLeg.position, -Vector2.up, 0.1f, 1 << LayerMaskEx.Obstacle);
-		_isGrounded = hitLeft.collider != null || hitRight.collider != null;
+		float hitPos;
+		_isGrounded = HitGround(0.001f) < 0.001f;
 
 		if (_isGrounded && !_jumpInput && _isJumpStarted)
 		{
