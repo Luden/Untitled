@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Helpers;
+using System;
 
 public class PlayerController : MonoBehaviour
 {
@@ -34,7 +35,14 @@ public class PlayerController : MonoBehaviour
 	private bool _isJumpDone;
 	private bool _isJumpStarted;
 	private float _jumpTime;
-	private bool _isGrounded;
+	private bool _isRightFaced = true;
+	public bool IsGrounded { get; private set; }	
+
+	public Action OnJump;
+	public Action OnFall;
+	public Action OnGrounded;
+	public Action OnMove;
+	public Action OnIdle;
 
 	void Start()
 	{
@@ -62,16 +70,31 @@ public class PlayerController : MonoBehaviour
 		UpdateJumping();
 		ClampMaxSpeedY();
 		UpdateMoving();
+		UpdateOrientation();
+	}
+
+	private void UpdateOrientation()
+	{
+		var velocity = _body.velocity.x;
+		if (velocity == 0)
+			return;
+
+		bool isMovingRight = Mathf.Sign(velocity) == 1;
+		if (isMovingRight != _isRightFaced)
+		{
+			transform.localScale = new Vector3(Mathf.Abs(transform.localScale.x) * Mathf.Sign(velocity), transform.localScale.y, transform.localScale.z);
+			_isRightFaced = isMovingRight;
+		}
 	}
 
 	private void UpdateMoving()
 	{
 		var velocity = _body.velocity.x;
-		var inputAcceleration = _horInput * (_isGrounded ? _groundAcceleration : _airAcceleration);
+		var inputAcceleration = _horInput * (IsGrounded ? _groundAcceleration : _airAcceleration);
 
 		bool isStoping = _horInput == 0;
 		if (isStoping)
-			inputAcceleration = Mathf.Sign(velocity) * -1f * (_isGrounded ? _groundAcceleration : _airAcceleration);
+			inputAcceleration = Mathf.Sign(velocity) * -1f * (IsGrounded ? _groundAcceleration : _airAcceleration);
 
 		var groundMaxVelocity = _groundMaxVelocity * Mathf.Abs(_horInput);
 		var airMaxVelocity = _airMaxVelocity * Mathf.Abs(_horInput);
@@ -80,7 +103,7 @@ public class PlayerController : MonoBehaviour
 		var newVelocity = velocity + inputAcceleration * dt;
 		if (Mathf.Abs(newVelocity) > Mathf.Abs(velocity))
 		{
-			if (_isGrounded)
+			if (IsGrounded)
 			{
 				newVelocity = Mathf.Sign(newVelocity) * Mathf.Min(Mathf.Abs(newVelocity), groundMaxVelocity);
 			}
@@ -104,7 +127,7 @@ public class PlayerController : MonoBehaviour
 		if (_jumpInput && !_isJumpStarted && !_isJumpDone)
 		{
 			_isJumpStarted = true;
-			if (!_isGrounded)
+			if (!IsGrounded)
 				_isJumpDone = true;
 		}
 
@@ -137,9 +160,9 @@ public class PlayerController : MonoBehaviour
 	{
 		var hitLeft = Physics2D.Raycast(_leftLeg.position, -Vector2.up, 0.1f, 1 << LayerMaskEx.Obstacle);
 		var hitRight = Physics2D.Raycast(_rightLeg.position, -Vector2.up, 0.1f, 1 << LayerMaskEx.Obstacle);
-		_isGrounded = hitLeft.collider != null || hitRight.collider != null;
+		IsGrounded = hitLeft.collider != null || hitRight.collider != null;
 
-		if (_isGrounded && !_jumpInput && _isJumpStarted)
+		if (IsGrounded && !_jumpInput && _isJumpStarted)
 		{
 			_isJumpStarted = false;
 			_isJumpDone = false;

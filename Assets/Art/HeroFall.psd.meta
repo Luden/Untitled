@@ -1,14 +1,11 @@
 fileFormatVersion: 2
-guid: afd3f94bbb546504285699aeb30bcc97
-timeCreated: 1508309021
+guid: cd9b0f56912598c4fab503f03c6e4c3c
+timeCreated: 1508336181
 licenseType: Free
 TextureImporter:
   fileIDToRecycleName:
-    21300000: HeroSheet_16x16_0
-    21300002: HeroSheet_16x16_1
-    21300004: HeroSheet_16x16_2
-    21300006: HeroSheet_16x16_3
-    21300008: HeroSheet_16x16_4
+    21300000: HeroFall_0
+    21300002: HeroFall_1
   serializedVersion: 4
   mipmaps:
     mipMapMode: 0
@@ -35,7 +32,7 @@ TextureImporter:
     filterMode: 0
     aniso: -1
     mipBias: -1
-    wrapMode: 0
+    wrapMode: 1
   nPOTScale: 0
   lightmap: 0
   compressionQuality: 50
@@ -75,46 +72,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: HeroSheet_16x16_0
-      rect:
-        serializedVersion: 2
-        x: 0
-        y: 16
-        width: 16
-        height: 16
-      alignment: 7
-      pivot: {x: 0.5, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      tessellationDetail: 0
-    - serializedVersion: 2
-      name: HeroSheet_16x16_1
-      rect:
-        serializedVersion: 2
-        x: 16
-        y: 16
-        width: 16
-        height: 16
-      alignment: 7
-      pivot: {x: 0.5, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      tessellationDetail: 0
-    - serializedVersion: 2
-      name: HeroSheet_16x16_2
-      rect:
-        serializedVersion: 2
-        x: 32
-        y: 16
-        width: 16
-        height: 16
-      alignment: 7
-      pivot: {x: 0.5, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      tessellationDetail: 0
-    - serializedVersion: 2
-      name: HeroSheet_16x16_3
+      name: HeroFall_0
       rect:
         serializedVersion: 2
         x: 0
@@ -127,7 +85,7 @@ TextureImporter:
       outline: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: HeroSheet_16x16_4
+      name: HeroFall_1
       rect:
         serializedVersion: 2
         x: 16
